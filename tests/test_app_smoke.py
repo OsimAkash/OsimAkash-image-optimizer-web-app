@@ -8,7 +8,7 @@ from streamlit.testing.v1 import AppTest
 
 from components.sidebar import PAGES
 
-APP_PATH = str(Path(__file__).resolve().parents[1] / "app.py")
+APP_PATH = str(Path(__file__).resolve().parents[1] / "streamlit_app.py")
 
 
 def _run_app() -> AppTest:
