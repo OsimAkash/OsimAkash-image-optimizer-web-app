@@ -5,8 +5,9 @@ from __future__ import annotations
 import streamlit as st
 
 from components.results import record_result, render_dashboard
-from components.settings import (build_settings_from_state, estimate_note,
-                                 render_estimates_section, render_settings_panel)
+from components.settings import (apply_resize_override, build_settings_from_state,
+                                 estimate_note, render_estimates_section,
+                                 render_settings_panel)
 from components.upload import render_image_grid, render_uploader
 from core.optimizer import OptimizationResult, optimize_image, recommend_settings
 
@@ -27,6 +28,7 @@ def _on_optimize_single(image_id: str) -> None:
         return
     if st.session_state.get("smart", False):
         settings, _ = recommend_settings(upload.info)
+        settings = apply_resize_override(settings, build_settings_from_state())
     else:
         settings = build_settings_from_state()
     result = optimize_image(upload.data, settings, filename=upload.filename, image_id=upload.id)
@@ -39,7 +41,8 @@ def _on_optimize_all() -> None:
     if not uploads:
         return
     smart = st.session_state.get("smart", False)
-    fallback_settings = None if smart else build_settings_from_state()
+    manual_settings = build_settings_from_state()
+    fallback_settings = None if smart else manual_settings
 
     progress = st.progress(0.0, text="Preparing…")
     status = st.empty()
@@ -49,6 +52,8 @@ def _on_optimize_all() -> None:
         status.markdown(f"**Processing {index} of {len(uploads)} images** — {upload.filename}")
         progress.progress((index - 1) / len(uploads), text=f"Processing {index} of {len(uploads)} images")
         settings = fallback_settings or recommend_settings(upload.info)[0]
+        if smart:
+            settings = apply_resize_override(settings, manual_settings)
         result = optimize_image(upload.data, settings, filename=upload.filename, image_id=upload.id)
         record_result(result, "opt_results")
 
