@@ -1,0 +1,10 @@
+# OptiPic — Streamlit theme configuration (light theme by default)
+[theme]
+base = "light"
+primaryColor = "#6366F1"
+backgroundColor = "#F5F7FB"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0F172A"
+
+[server]
+maxUploadSize = 200

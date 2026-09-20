@@ -1,0 +1,13 @@
+# OptiPic — Smart Image Optimizer
+# Runtime dependencies (width= API requires Streamlit >= 1.49)
+streamlit>=1.49
+Pillow>=10.1
+numpy>=1.26
+
+# Testing (included because the project ships a test suite)
+pytest>=8.0
+
+
+cd "D:\python\image optimizer web app"
+.\venv\Scripts\Activate.ps1
+streamlit run app.py
