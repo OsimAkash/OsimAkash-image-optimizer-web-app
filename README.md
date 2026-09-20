@@ -55,7 +55,8 @@ quality settings) into a single clean web experience:
 ```
 image-optimizer/
 │
-├── app.py                    # Entry point: session init, theming, navigation, routing
+├── app.py                    # Vercel ASGI entry point
+├── streamlit_app.py          # Streamlit UI entry point: session init, theming, navigation
 ├── requirements.txt          # streamlit, Pillow, numpy (+ pytest for tests)
 ├── README.md
 ├── .gitignore
@@ -121,10 +122,13 @@ pip install -r requirements.txt
 ### 3. Run the application
 
 ```bash
-streamlit run app.py
+streamlit run streamlit_app.py
 ```
 
 The app opens at **http://localhost:8501** automatically.
+
+For Vercel, `app.py` exposes the Streamlit ASGI application. The Vercel Python runtime
+requires Streamlit 1.50 or newer for this entrypoint pattern.
 
 ## 🧪 Testing
 
