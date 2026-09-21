@@ -20,7 +20,8 @@ def _run_app() -> AppTest:
 def test_home_page_renders():
     app = _run_app()
     assert not app.exception
-    assert "Optimize Your Images." in app.markdown[0].body or app.markdown  # hero present
+    assert app.markdown
+    assert any("Optimize Your Images." in (getattr(el, "body", "") or "") for el in app.markdown)
 
 
 def test_start_optimizing_button_navigates():
