@@ -3,6 +3,7 @@
 streamlit>=1.50
 Pillow>=10.1
 numpy>=1.26
+pandas>=2.2
 
 # Testing (included because the project ships a test suite)
 pytest>=8.0
