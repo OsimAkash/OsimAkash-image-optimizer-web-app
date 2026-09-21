@@ -8,3 +8,10 @@ textColor = "#0F172A"
 
 [server]
 maxUploadSize = 200
+maxMessageSize = 200
+enableCORS = false
+enableXsrfProtection = false
+headless = true
+
+[browser]
+gatherUsageStats = false
