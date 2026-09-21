@@ -11,7 +11,7 @@ from streamlit.testing.v1 import AppTest
 from components.sidebar import PAGES
 from core.analyzer import UploadedImage, analyze_image, make_thumbnail
 
-APP_PATH = str(Path(__file__).resolve().parents[1] / "app.py")
+APP_PATH = str(Path(__file__).resolve().parents[1] / "streamlit_app.py")
 SAMPLE = Path(__file__).resolve().parents[1] / "assets" / "sample-photo.jpg"
 
 

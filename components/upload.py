@@ -155,8 +155,9 @@ def _render_card(
     previews_key: str,
 ) -> None:
     with st.container(border=True):
-        if upload.thumb:
-            st.image(upload.thumb, width="stretch")
+        preview_data = upload.thumb or upload.data
+        if preview_data:
+            st.image(preview_data, width="stretch")
         alpha_pill = '<span class="opt-pill-green opt-pill">ALPHA</span>' if upload.has_alpha else ""
         st.markdown(
             f"<div class='opt-file-name' title='{upload.filename}'>{upload.filename}</div>"
