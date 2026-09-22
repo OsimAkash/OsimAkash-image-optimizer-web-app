@@ -50,7 +50,7 @@ def test_optimizer_empty_state_has_guidance():
 
 def test_history_and_settings_pages_render_widgets():
     app = _run_app()
-    app.sidebar.radio[0].set_value(PAGES[5]).run()
+    app.sidebar.radio[0].set_value(PAGES[-1]).run()
     assert not app.exception
     assert app.radio  # theme radio exists
     assert app.number_input  # upload limit input exists

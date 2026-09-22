@@ -9,10 +9,10 @@ from utils.file_utils import format_bytes
 
 FEATURES = [
     ("🗜️", "Smart Compression", "Intelligent quality selection per image — strong savings with visually lossless results."),
-    ("📦", "Bulk Optimization", "Drop dozens of images at once and optimize everything in a single click."),
+    ("🪄", "Background Remover", "Extract subjects and create transparent cutouts or solid studio backdrops with edge feathering."),
+    ("🎨", "Fresh Color Editor", "One-click aesthetic filters, auto-levels, and studio tone & clarity tuning."),
     ("🔄", "Format Conversion", "Convert between JPEG, PNG, WebP, BMP and TIFF with transparency-safe handling."),
     ("📐", "Image Resizing", "Scale by width, height or percentage with high-quality LANCZOS resampling."),
-    ("🔍", "Quality Analysis", "Every result reports real sizes, dimensions, timing and measured savings."),
     ("🔒", "Privacy First", "Images are processed temporarily in memory and never permanently stored."),
 ]
 

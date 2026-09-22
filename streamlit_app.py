@@ -18,7 +18,10 @@ import core.optimizer  # noqa: F401  (sets Image.MAX_IMAGE_PIXELS)
 from components.sidebar import PAGES, LOGO_PATH, render_sidebar
 from components.styles import render_theme
 from utils.file_utils import load_history
-from views import converter, history, home, resizer
+from views import bg_remover as bg_remover_view
+from views import converter
+from views import enhancer as enhancer_view
+from views import history, home, resizer
 from views import optimizer as optimizer_view
 from views import settings as settings_view
 
@@ -40,13 +43,13 @@ def init_session_state() -> None:
     """Create every session key once — no scattered mutable globals."""
     defaults: dict = {
         # uploads per tool
-        "uploads": [], "conv_uploads": [], "rz_uploads": [],
+        "uploads": [], "bg_uploads": [], "enh_uploads": [], "conv_uploads": [], "rz_uploads": [],
         # per-tool validation caches (upload id -> UploadedImage or error tuple)
-        "opt_cache": {}, "conv_cache": {}, "rz_cache": {},
+        "opt_cache": {}, "bg_cache": {}, "enh_cache": {}, "conv_cache": {}, "rz_cache": {},
         # preview toggles
-        "opt_previews": set(), "conv_previews": set(), "rz_previews": set(),
+        "opt_previews": set(), "bg_previews": set(), "enh_previews": set(), "conv_previews": set(), "rz_previews": set(),
         # results per tool (image id -> result)
-        "opt_results": {}, "conv_results": {}, "rz_results": {},
+        "opt_results": {}, "bg_results": {}, "enh_results": {}, "conv_results": {}, "rz_results": {},
         # cumulative statistics + lightweight history
         "stats": {
             "processed": 0, "succeeded": 0, "failed": 0,
@@ -55,12 +58,6 @@ def init_session_state() -> None:
         "history": [],
         # per-page UI flags (not widget-bound)
         "show_estimates": False,
-        # NOTE: widget-bound keys (opt_*, conv_*, rz_*, cfg_*, theme) are deliberately
-        # NOT seeded here. Streamlit ignores API-seeded values for widgets first
-        # created after the browser has sent widget-state messages (e.g. after a
-        # navigation click), which made defaults silently revert. Instead every
-        # widget declares its own default via value=/index=, and presets change
-        # values through on_click callbacks — the documented mechanism.
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -76,10 +73,14 @@ def route_page(page: str) -> None:
     elif page == PAGES[1]:
         optimizer_view.render()
     elif page == PAGES[2]:
-        converter.render()
+        bg_remover_view.render()
     elif page == PAGES[3]:
-        resizer.render()
+        enhancer_view.render()
     elif page == PAGES[4]:
+        converter.render()
+    elif page == PAGES[5]:
+        resizer.render()
+    elif page == PAGES[6]:
         history.render()
     else:
         settings_view.render()
