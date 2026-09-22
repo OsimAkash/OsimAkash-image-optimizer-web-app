@@ -129,13 +129,43 @@ hr {
   margin: 1.8rem 0;
 }
 
-#MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"],
+#MainMenu, footer, [data-testid="stDecoration"],
 [data-testid="stStatusWidget"] {
-  visibility: hidden;
-  height: 0;
+  display: none !important;
 }
+
 [data-testid="stHeader"] {
-  background: transparent;
+  background: transparent !important;
+  z-index: 99 !important;
+}
+
+/* Ensure sidebar expand and collapse toggle controls are always visible & clickable */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapseButton"],
+button[aria-label="Open sidebar"],
+button[aria-label="Close sidebar"] {
+  visibility: visible !important;
+  display: inline-flex !important;
+  opacity: 1 !important;
+  z-index: 1000 !important;
+  color: var(--text) !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all .2s ease !important;
+  pointer-events: auto !important;
+}
+
+[data-testid="stSidebarCollapsedControl"]:hover,
+[data-testid="collapsedControl"]:hover,
+[data-testid="stSidebarCollapseButton"]:hover,
+button[aria-label="Open sidebar"]:hover,
+button[aria-label="Close sidebar"]:hover {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  transform: scale(1.06);
 }
 
 ::-webkit-scrollbar {
