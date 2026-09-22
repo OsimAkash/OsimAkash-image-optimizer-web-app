@@ -58,7 +58,8 @@ def test_optimizer_batch_end_to_end():
     assert history[0]["status"] == "success"
 
     # dashboard rendered with the ZIP download present
-    download_labels = [d.label for d in app.download_button]
+    download_buttons = getattr(app, "download_button", [])
+    download_labels = [d.label for d in download_buttons]
     assert any("Download All" in label for label in download_labels)
     assert any(label == "⬇ Download" for label in download_labels)
 
