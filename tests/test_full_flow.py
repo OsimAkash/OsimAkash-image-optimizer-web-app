@@ -11,7 +11,7 @@ from streamlit.testing.v1 import AppTest
 from components.sidebar import PAGES
 from core.analyzer import UploadedImage, analyze_image, make_thumbnail
 
-APP_PATH = str(Path(__file__).resolve().parents[1] / "app.py")
+APP_PATH = str(Path(__file__).resolve().parents[1] / "streamlit_app.py")
 SAMPLE = Path(__file__).resolve().parents[1] / "assets" / "sample-photo.jpg"
 
 
@@ -58,7 +58,8 @@ def test_optimizer_batch_end_to_end():
     assert history[0]["status"] == "success"
 
     # dashboard rendered with the ZIP download present
-    download_labels = [d.label for d in app.download_button]
+    download_buttons = getattr(app, "download_button", [])
+    download_labels = [d.label for d in download_buttons]
     assert any("Download All" in label for label in download_labels)
     assert any(label == "⬇ Download" for label in download_labels)
 

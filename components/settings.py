@@ -3,6 +3,8 @@ Smart Optimize recommendations and size estimation."""
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import streamlit as st
 
 from core.analyzer import UploadedImage, estimate_output_size
@@ -127,6 +129,21 @@ def build_settings_from_state(prefix: str = "opt") -> OptimizationSettings:
     )
 
 
+def apply_resize_override(
+    recommended: OptimizationSettings,
+    manual: OptimizationSettings,
+) -> OptimizationSettings:
+    """Keep Smart Optimize choices while honoring an explicit resize request."""
+    if manual.resize_mode == "original":
+        return recommended
+    return replace(
+        recommended,
+        resize_mode=manual.resize_mode,
+        resize_value=manual.resize_value,
+        maintain_aspect=manual.maintain_aspect,
+    )
+
+
 def render_estimates_section(uploads: list[UploadedImage]) -> None:
     """Estimate-and-display potential savings (clearly labeled as estimates)."""
     st.markdown(
@@ -148,6 +165,7 @@ def render_estimates_section(uploads: list[UploadedImage]) -> None:
         if smart:
             from core.optimizer import recommend_settings
             per_image, _ = recommend_settings(upload.info)
+            per_image = apply_resize_override(per_image, build_settings_from_state())
         else:
             per_image = settings
         estimate = estimate_output_size(

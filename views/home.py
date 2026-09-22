@@ -30,10 +30,13 @@ def render() -> None:
     st.markdown(
         """
         <div class="opt-hero">
-          <div class="opt-hero-badge">✨ SMART IMAGE OPTIMIZER</div>
-          <h1>Optimize Your Images.<br>Keep the Quality.</h1>
-          <p class="opt-hero-sub">Compress, resize and convert images with powerful optimization
-          tools built for speed and quality.</p>
+          <div class="opt-hero-badge">
+            <span class="pulse-dot"></span>
+            <span>NEXT-GEN IMAGE ENGINE</span>
+          </div>
+          <h1>Optimize Your Images.<br>Preserve Pure Quality.</h1>
+          <p class="opt-hero-sub">Intelligently compress, resize and convert photos with lightning-fast,
+          measured byte-level savings and visually lossless fidelity.</p>
         </div>
         """,
         unsafe_allow_html=True,
