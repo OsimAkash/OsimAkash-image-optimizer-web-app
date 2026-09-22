@@ -127,8 +127,7 @@ streamlit run streamlit_app.py
 
 The app opens at **http://localhost:8501** automatically.
 
-For Vercel, `app.py` exposes the Streamlit ASGI application. The Vercel Python runtime
-requires Streamlit 1.50 or newer for this entrypoint pattern.
+For Vercel or ASGI deployments, `app.py` exposes the Streamlit application entry point.
 
 ## 🧪 Testing
 
@@ -200,8 +199,8 @@ in the browser.
 
 | Problem | Fix |
 |---|---|
-| `streamlit: command not found` | Activate the virtual environment first, or run `python -m streamlit run app.py` |
-| Port 8501 already in use | `streamlit run app.py --server.port 8502` |
+| `streamlit: command not found` | Activate the virtual environment first, or run `python -m streamlit run streamlit_app.py` |
+| Port 8501 already in use | `streamlit run streamlit_app.py --server.port 8502` |
 | "File exceeds the allowed size" | Raise the limit on the Settings page (server cap: 200 MB in `config.toml`) |
 | "Image dimensions are too large" | The decompression-bomb guard rejected the image; raise it in Settings if safe |
 | Dark mode looks off | Theme is applied via CSS; reload the browser tab after switching |
