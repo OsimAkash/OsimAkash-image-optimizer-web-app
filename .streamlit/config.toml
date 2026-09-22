@@ -1,17 +1,19 @@
-# OptiPic — Streamlit theme configuration (light theme by default)
+# OptiPic — Streamlit theme configuration
 [theme]
 base = "light"
-primaryColor = "#6366F1"
-backgroundColor = "#F5F7FB"
+primaryColor = "#4F46E5"
+backgroundColor = "#F8FAFC"
 secondaryBackgroundColor = "#FFFFFF"
 textColor = "#0F172A"
 
 [server]
-maxUploadSize = 200
-maxMessageSize = 200
+headless = true
+maxUploadSize = 50
+maxMessageSize = 50
 enableCORS = false
 enableXsrfProtection = false
-headless = true
+enableWebsocketCompression = false
 
 [browser]
 gatherUsageStats = false
+
