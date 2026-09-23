@@ -14,6 +14,8 @@ LOGO_PATH = ASSETS_DIR / "logo.png"
 PAGES = [
     "🏠 Home",
     "🗜️ Image Optimizer",
+    "🪄 Background Remover",
+    "🎨 Fresh Color Editor",
     "🔄 Image Converter",
     "📐 Image Resizer",
     "🕘 History",
