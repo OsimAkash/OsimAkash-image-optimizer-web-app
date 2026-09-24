@@ -1,0 +1,5 @@
+# Optional AI Neural Background Removal (for local or containerized deployments)
+-r requirements.txt
+rembg>=2.0.50
+onnxruntime>=1.16.0
+pytest>=8.0

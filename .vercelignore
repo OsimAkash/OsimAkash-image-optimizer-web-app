@@ -1,0 +1,9 @@
+.git
+.github
+.pytest_cache
+.venv
+venv
+tests
+.vscode
+.kilo
+requirements-ai.txt

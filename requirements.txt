@@ -1,12 +1,5 @@
-# Runtime dependencies
+# Production runtime dependencies (kept under Vercel 500MB serverless limit)
 streamlit>=1.35
 Pillow>=10.1
 numpy>=1.26
 pandas>=2.2
-
-# Optional AI Neural Background Removal
-rembg>=2.0.50
-onnxruntime>=1.16.0
-
-# Testing (included because the project ships a test suite)
-pytest>=8.0
