@@ -20,3 +20,7 @@ temp/
 tmp/
 data/
 logs/
+
+# IDE files
+.vscode/
+.kilo/

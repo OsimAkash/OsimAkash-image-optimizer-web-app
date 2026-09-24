@@ -99,6 +99,7 @@ class OptimizationResult:
     saved_percent: float = 0.0
     data: bytes = b""
     thumb: bytes = b""
+    original_thumb: bytes = b""
     error: str = ""
     note: str = ""
     metadata_removed: bool = False
@@ -273,6 +274,7 @@ def optimize_image(
         result.saved_percent = calculate_savings(len(data), len(output))
         result.processing_time = time.perf_counter() - started
         result.thumb = make_thumbnail(output)
+        result.original_thumb = make_thumbnail(data)
         result.background_applied = background_applied
         result.output_filename = build_output_filename(filename, EXTENSIONS[target])
         if background_applied:

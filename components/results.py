@@ -144,8 +144,9 @@ def render_before_after(result, *, key_prefix: str) -> None:
 
         with original_side:
             st.markdown("**Original**")
-            if result.thumb:
-                st.image(result.thumb, width="stretch")
+            orig_display = getattr(result, "original_thumb", b"") or result.thumb
+            if orig_display:
+                st.image(orig_display, width="stretch")
             st.markdown(
                 f"<div class='opt-caption'><strong>{result.original_filename}</strong>"
                 f"{format_bytes(result.original_size)} · {result.original_width} × {result.original_height}"
