@@ -4,7 +4,7 @@
 
 OptiPic is a complete, production-quality **image optimization web application** built with
 Python and Streamlit. Compress, resize and convert images with real, measured results —
-every percentage shown in the UI is calculated from the actual bytes before and after
+every percentage shown in the UI is calculated from the actual bytes before and after 
 processing.
 
 ---
