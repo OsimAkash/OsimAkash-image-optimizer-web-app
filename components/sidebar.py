@@ -15,6 +15,7 @@ PAGES = [
     "🏠 Home",
     "🗜️ Image Optimizer",
     "🪄 Background Remover",
+    "📸 Passport & Stamp Photo",
     "🎨 Fresh Color Editor",
     "🔄 Image Converter",
     "📐 Image Resizer",

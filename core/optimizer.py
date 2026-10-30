@@ -105,6 +105,7 @@ class OptimizationResult:
     metadata_removed: bool = False
     background_applied: bool = False
     settings_used: OptimizationSettings = field(default_factory=OptimizationSettings)
+    cutout_data: bytes = b""
 
 
 def calculate_savings(original_size: int, optimized_size: int) -> float:

@@ -132,3 +132,45 @@ def test_ai_models_and_palettes_exist():
     assert "u2net_human_seg" in AI_MODELS
     assert "Studio White" in STUDIO_PALETTES
     assert isinstance(has_ai_remover(), bool)
+
+
+def test_remove_background_gradient_mode(photo_jpeg_bytes):
+    result = remove_background(
+        photo_jpeg_bytes,
+        mode="gradient",
+        gradient_start="#FF512F",
+        gradient_end="#DD2476",
+        gradient_style="vertical",
+        output_format="png",
+        filename="grad_photo.png",
+    )
+    assert result.status == "success"
+    assert len(result.data) > 0
+    assert result.new_width == 800
+    assert result.new_height == 600
+    assert len(result.cutout_data) > 0
+
+
+def test_remove_background_cached_cutout_reuse(photo_jpeg_bytes):
+    # Initial run gives transparent cutout
+    res1 = remove_background(
+        photo_jpeg_bytes,
+        mode="transparent",
+        output_format="png",
+        filename="initial.png",
+    )
+    assert res1.status == "success"
+    assert len(res1.cutout_data) > 0
+
+    # Re-apply new solid color instantly with cached cutout
+    res2 = remove_background(
+        photo_jpeg_bytes,
+        mode="color",
+        bg_color="#FFE4E6",
+        cached_cutout_bytes=res1.cutout_data,
+        output_format="png",
+        filename="recolored.png",
+    )
+    assert res2.status == "success"
+    assert len(res2.data) > 0
+    assert "Instant Cutout Cache" in res2.note

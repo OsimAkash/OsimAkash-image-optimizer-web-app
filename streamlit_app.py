@@ -23,6 +23,7 @@ from views import converter
 from views import enhancer as enhancer_view
 from views import history, home, resizer
 from views import optimizer as optimizer_view
+from views import passport_studio as passport_view
 from views import settings as settings_view
 
 logging.basicConfig(
@@ -43,13 +44,13 @@ def init_session_state() -> None:
     """Create every session key once — no scattered mutable globals."""
     defaults: dict = {
         # uploads per tool
-        "uploads": [], "bg_uploads": [], "enh_uploads": [], "conv_uploads": [], "rz_uploads": [],
+        "uploads": [], "bg_uploads": [], "ps_uploads": [], "enh_uploads": [], "conv_uploads": [], "rz_uploads": [],
         # per-tool validation caches (upload id -> UploadedImage or error tuple)
-        "opt_cache": {}, "bg_cache": {}, "enh_cache": {}, "conv_cache": {}, "rz_cache": {},
+        "opt_cache": {}, "bg_cache": {}, "ps_cache": {}, "enh_cache": {}, "conv_cache": {}, "rz_cache": {},
         # preview toggles
-        "opt_previews": set(), "bg_previews": set(), "enh_previews": set(), "conv_previews": set(), "rz_previews": set(),
+        "opt_previews": set(), "bg_previews": set(), "ps_previews": set(), "enh_previews": set(), "conv_previews": set(), "rz_previews": set(),
         # results per tool (image id -> result)
-        "opt_results": {}, "bg_results": {}, "enh_results": {}, "conv_results": {}, "rz_results": {},
+        "opt_results": {}, "bg_results": {}, "ps_results": {}, "enh_results": {}, "conv_results": {}, "rz_results": {},
         # cumulative statistics + lightweight history
         "stats": {
             "processed": 0, "succeeded": 0, "failed": 0,
@@ -75,12 +76,14 @@ def route_page(page: str) -> None:
     elif page == PAGES[2]:
         bg_remover_view.render()
     elif page == PAGES[3]:
-        enhancer_view.render()
+        passport_view.render()
     elif page == PAGES[4]:
-        converter.render()
+        enhancer_view.render()
     elif page == PAGES[5]:
-        resizer.render()
+        converter.render()
     elif page == PAGES[6]:
+        resizer.render()
+    elif page == PAGES[7]:
         history.render()
     else:
         settings_view.render()

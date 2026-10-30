@@ -46,17 +46,92 @@ AI_MODELS: Dict[str, str] = {
 }
 
 STUDIO_PALETTES: Dict[str, str] = {
+    # Studio & Minimalist
     "Studio White": "#FFFFFF",
     "Soft Gray": "#F3F4F6",
     "E-Commerce Cream": "#FDFBF7",
     "Warm Sand": "#F5EFEB",
     "Slate Charcoal": "#1E293B",
     "Midnight Blue": "#0F172A",
-    "Chroma Green": "#00FF00",
-    "Chroma Blue": "#0000FF",
+    "Onyx Black": "#0B0F19",
+    "Cool Steel": "#94A3B8",
+    # Pastels & Aesthetics
     "Pastel Purple": "#EDE9FE",
     "Rose Pink": "#FFE4E6",
+    "Sky Azure": "#E0F2FE",
+    "Mint Sage": "#ECFDF5",
+    "Peach Sorbet": "#FFEDD5",
+    "Lemon Butter": "#FEF9C3",
+    "Lavender Dream": "#F3E8FF",
+    # Bold & Editorial
+    "Electric Indigo": "#4F46E5",
+    "Vibrant Crimson": "#E11D48",
+    "Emerald Forest": "#059669",
+    "Warm Amber": "#D97706",
+    "Ocean Sapphire": "#0284C7",
+    "Royal Magenta": "#9333EA",
+    # Chroma Production
+    "Chroma Green": "#00FF00",
+    "Chroma Blue": "#0000FF",
 }
+
+GRADIENT_PRESETS: Dict[str, Tuple[str, str, str]] = {
+    "Sunset Aura": ("#FF512F", "#DD2476", "vertical"),
+    "Peach Blossom": ("#FF9A8B", "#FF6A88", "diagonal"),
+    "Ocean Azure": ("#2AF598", "#009EFD", "vertical"),
+    "Royal Indigo": ("#654EA3", "#EAAFC8", "diagonal"),
+    "Studio Spotlight": ("#FFFFFF", "#94A3B8", "radial"),
+    "Emerald Mint": ("#10B981", "#064E3B", "vertical"),
+    "Minimalist Warm": ("#FDFBF7", "#D5C7BC", "vertical"),
+    "Midnight Velvet": ("#1E293B", "#0F172A", "radial"),
+    "Cyber Neon": ("#8A2387", "#E94057", "diagonal"),
+    "Soft Cotton": ("#E0C3FC", "#8EC5FC", "horizontal"),
+}
+
+
+def create_solid_background(
+    size: Tuple[int, int],
+    color: Union[Tuple[int, int, int], str] = (255, 255, 255),
+) -> Image.Image:
+    """Create a high-quality RGBA image filled with the specified solid color."""
+    rgb = _parse_color(color)
+    return Image.new("RGBA", size, (*rgb, 255))
+
+
+def create_gradient_background(
+    size: Tuple[int, int],
+    start_color: Union[Tuple[int, int, int], str] = "#FFFFFF",
+    end_color: Union[Tuple[int, int, int], str] = "#CBD5E1",
+    style: str = "vertical",  # "vertical" | "horizontal" | "diagonal" | "radial"
+) -> Image.Image:
+    """Generate smooth linear or radial gradients using fast NumPy vectorization."""
+    w, h = max(1, size[0]), max(1, size[1])
+    c1 = np.array(_parse_color(start_color), dtype=np.float32)
+    c2 = np.array(_parse_color(end_color), dtype=np.float32)
+
+    style_clean = (style or "vertical").lower()
+    if "horiz" in style_clean:
+        t = np.linspace(0.0, 1.0, w, dtype=np.float32)
+        t_grid = np.tile(t, (h, 1))[:, :, None]
+    elif "diag" in style_clean:
+        x = np.linspace(0.0, 1.0, w, dtype=np.float32)
+        y = np.linspace(0.0, 1.0, h, dtype=np.float32)
+        xx, yy = np.meshgrid(x, y)
+        t_grid = np.clip((xx + yy) / 2.0, 0.0, 1.0)[:, :, None]
+    elif "rad" in style_clean or "spot" in style_clean:
+        x = np.linspace(-1.0, 1.0, w, dtype=np.float32)
+        y = np.linspace(-1.0, 1.0, h, dtype=np.float32)
+        xx, yy = np.meshgrid(x, y)
+        dist = np.sqrt(xx ** 2 + yy ** 2) / np.sqrt(2.0)
+        t_grid = np.clip(dist, 0.0, 1.0)[:, :, None]
+    else:  # default vertical (top to bottom)
+        t = np.linspace(0.0, 1.0, h, dtype=np.float32)
+        t_grid = np.tile(t[:, None], (1, w))[:, :, None]
+
+    grad_rgb = (c1 * (1.0 - t_grid) + c2 * t_grid).astype(np.uint8)
+    alpha = np.full((h, w, 1), 255, dtype=np.uint8)
+    rgba_arr = np.concatenate([grad_rgb, alpha], axis=2)
+    return Image.fromarray(rgba_arr, mode="RGBA")
 
 
 def has_ai_remover() -> bool:
@@ -81,8 +156,11 @@ def get_rembg_session(model_name: str = "u2net") -> Any:
 def remove_background(
     data: bytes,
     *,
-    mode: str = "transparent",  # "transparent" | "color" | "blur" | "custom_image" | "mask"
+    mode: str = "transparent",  # "transparent" | "color" | "gradient" | "blur" | "custom_image" | "mask"
     bg_color: Union[Tuple[int, int, int], str] = (255, 255, 255),
+    gradient_start: Union[Tuple[int, int, int], str] = "#FFFFFF",
+    gradient_end: Union[Tuple[int, int, int], str] = "#CBD5E1",
+    gradient_style: str = "vertical",  # "vertical" | "horizontal" | "diagonal" | "radial"
     blur_radius: int = 25,
     bg_image_data: bytes = b"",
     engine: str = "auto",  # "auto" | "ai" | "smart" | "chroma"
@@ -99,6 +177,7 @@ def remove_background(
     quality: int = 90,
     filename: str = "image.png",
     image_id: str = "",
+    cached_cutout_bytes: bytes = b"",
 ) -> OptimizationResult:
     """Extract foreground subject and remove or replace image background."""
     start_time = time.perf_counter()
@@ -111,33 +190,58 @@ def remove_background(
             orig_w, orig_h = img.size
             orig_fmt = (img.format or "PNG").upper()
 
-            # 1. Extract Cutout Subject RGBA
-            cutout_img, used_engine_label = _cutout_subject(
-                img,
-                engine=engine,
-                model_name=model_name,
-                alpha_matting=alpha_matting,
-                alpha_matting_foreground_threshold=alpha_matting_foreground_threshold,
-                alpha_matting_background_threshold=alpha_matting_background_threshold,
-                alpha_matting_erode_size=alpha_matting_erode_size,
-                post_process_mask=post_process_mask,
-                tolerance=tolerance,
-                edge_feather=edge_feather,
-                defringe=defringe,
-            )
+            # 1. Subject extraction or instant cached cutout reuse
+            if cached_cutout_bytes:
+                with Image.open(io.BytesIO(cached_cutout_bytes)) as c_raw:
+                    cutout_img = ImageOps.exif_transpose(c_raw).convert("RGBA")
+                cutout_png_bytes = cached_cutout_bytes
+                used_engine_label = "Instant Cutout Cache"
+            else:
+                cutout_img, used_engine_label = _cutout_subject(
+                    img,
+                    engine=engine,
+                    model_name=model_name,
+                    alpha_matting=alpha_matting,
+                    alpha_matting_foreground_threshold=alpha_matting_foreground_threshold,
+                    alpha_matting_background_threshold=alpha_matting_background_threshold,
+                    alpha_matting_erode_size=alpha_matting_erode_size,
+                    post_process_mask=post_process_mask,
+                    tolerance=tolerance,
+                    edge_feather=edge_feather,
+                    defringe=defringe,
+                )
+                cutout_buf = io.BytesIO()
+                cutout_img.save(cutout_buf, format="PNG")
+                cutout_png_bytes = cutout_buf.getvalue()
 
             # 2. Render into requested mode
             target_fmt = output_format.lower()
             if mode == "color":
-                rgb_bg = _parse_color(bg_color)
-                final_img = Image.new("RGBA", cutout_img.size, (*rgb_bg, 255))
-                final_img.paste(cutout_img, (0, 0), cutout_img)
+                backdrop = create_solid_background(cutout_img.size, bg_color)
+                backdrop.paste(cutout_img, (0, 0), cutout_img)
                 if target_fmt in ("jpeg", "jpg"):
-                    final_img = final_img.convert("RGB")
+                    final_img = backdrop.convert("RGB")
                     actual_format = "jpeg"
                 else:
+                    final_img = backdrop
                     actual_format = target_fmt if target_fmt in ("png", "webp") else "png"
                 suffix = "-color-bg"
+
+            elif mode == "gradient":
+                backdrop = create_gradient_background(
+                    cutout_img.size,
+                    start_color=gradient_start,
+                    end_color=gradient_end,
+                    style=gradient_style,
+                )
+                backdrop.paste(cutout_img, (0, 0), cutout_img)
+                if target_fmt in ("jpeg", "jpg"):
+                    final_img = backdrop.convert("RGB")
+                    actual_format = "jpeg"
+                else:
+                    final_img = backdrop
+                    actual_format = target_fmt if target_fmt in ("png", "webp") else "png"
+                suffix = "-gradient-bg"
 
             elif mode == "blur":
                 # Portrait Bokeh Mode: blur original and composite sharp subject on top
@@ -210,6 +314,7 @@ def remove_background(
                 thumb=make_thumbnail(out_bytes),
                 original_thumb=orig_thumb,
                 note=f"{used_engine_label} · Mode: {mode.capitalize()}",
+                cutout_data=cutout_png_bytes,
             )
     except Exception as exc:  # noqa: BLE001
         logger.exception("Background removal failed for %s", filename)

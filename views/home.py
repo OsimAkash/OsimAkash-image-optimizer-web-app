@@ -10,10 +10,10 @@ from utils.file_utils import format_bytes
 FEATURES = [
     ("🗜️", "Smart Compression", "Intelligent quality selection per image — strong savings with visually lossless results."),
     ("🪄", "Background Remover", "Extract subjects and create transparent cutouts or solid studio backdrops with edge feathering."),
+    ("📸", "Passport & Stamp Studio", "Official 300 DPI Passport and Stamp sizes with smart AI face framing and 4R printable sheets."),
     ("🎨", "Fresh Color Editor", "One-click aesthetic filters, auto-levels, and studio tone & clarity tuning."),
     ("🔄", "Format Conversion", "Convert between JPEG, PNG, WebP, BMP and TIFF with transparency-safe handling."),
     ("📐", "Image Resizing", "Scale by width, height or percentage with high-quality LANCZOS resampling."),
-    ("🔒", "Privacy First", "Images are processed temporarily in memory and never permanently stored."),
 ]
 
 WHY_POINTS = [
