@@ -8,12 +8,12 @@ from components.sidebar import TAGLINE, go_to
 from utils.file_utils import format_bytes
 
 FEATURES = [
-    ("🗜️", "Smart Compression", "Intelligent quality selection per image — strong savings with visually lossless results."),
-    ("🪄", "Background Remover", "Extract subjects and create transparent cutouts or solid studio backdrops with edge feathering."),
-    ("📸", "Passport & Stamp Studio", "Official 300 DPI Passport and Stamp sizes with smart AI face framing and 4R printable sheets."),
-    ("🎨", "Fresh Color Editor", "One-click aesthetic filters, auto-levels, and studio tone & clarity tuning."),
-    ("🔄", "Format Conversion", "Convert between JPEG, PNG, WebP, BMP and TIFF with transparency-safe handling."),
-    ("📐", "Image Resizing", "Scale by width, height or percentage with high-quality LANCZOS resampling."),
+    ("🗜️", "Smart Compression", "Intelligent quality selection per image — strong savings with visually lossless results.", "🗜️ Image Optimizer"),
+    ("🪄", "Background Remover", "Extract subjects and create transparent cutouts or solid studio backdrops with edge feathering.", "🪄 Background Remover"),
+    ("📸", "Passport & Stamp Studio", "Official 300 DPI Passport and Stamp sizes with smart AI face framing and 4R printable sheets.", "📸 Passport & Stamp Photo"),
+    ("🎨", "Fresh Color Editor", "One-click aesthetic filters, auto-levels, and studio tone & clarity tuning.", "🎨 Fresh Color Editor"),
+    ("🔄", "Format Conversion", "Convert between JPEG, PNG, WebP, BMP and TIFF with transparency-safe handling.", "🔄 Image Converter"),
+    ("📐", "Image Resizing", "Scale by width, height or percentage with high-quality LANCZOS resampling.", "📐 Image Resizer"),
 ]
 
 WHY_POINTS = [
@@ -42,12 +42,15 @@ def render() -> None:
         unsafe_allow_html=True,
     )
 
-    primary_col, secondary_col = st.columns(2, gap="small")
+    primary_col, passport_col, secondary_col = st.columns(3, gap="small")
     with primary_col:
         st.button("🚀 Start Optimizing", type="primary", width="stretch",
                   on_click=go_to, args=("🗜️ Image Optimizer",))
+    with passport_col:
+        st.button("📸 Passport & Stamp Studio", width="stretch",
+                  on_click=go_to, args=("📸 Passport & Stamp Photo",))
     with secondary_col:
-        st.button("🧭 Explore Tools", width="stretch",
+        st.button("🧭 Explore All Tools", width="stretch",
                   on_click=go_to, args=("🔄 Image Converter",))
 
     stats = st.session_state.get("stats", {})
@@ -64,13 +67,15 @@ def render() -> None:
                 unsafe_allow_html=True)
     for row_start in range(0, len(FEATURES), 3):
         cols = st.columns(3, gap="medium")
-        for col, (icon, title, body) in zip(cols, FEATURES[row_start:row_start + 3]):
+        for col, (icon, title, body, target_page) in zip(cols, FEATURES[row_start:row_start + 3]):
             with col:
                 st.markdown(
                     f"<div class='opt-feature'><div class='opt-feature-icon'>{icon}</div>"
                     f"<h4>{title}</h4><p>{body}</p></div>",
                     unsafe_allow_html=True,
                 )
+                st.button(f"Open {title} →", key=f"btn_nav_{target_page}", width="stretch",
+                          on_click=go_to, args=(target_page,))
 
     st.markdown("<div class='opt-section-title'>Why use OptiPic?</div>"
                 "<div class='opt-section-sub'>Because images are usually the heaviest part of any website.</div>",

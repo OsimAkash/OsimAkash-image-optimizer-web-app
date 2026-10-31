@@ -45,6 +45,11 @@ def test_generate_passport_photo_bd_standard(photo_jpeg_bytes):
     assert result.height_px == 531
     assert result.width_mm == 35.0
     assert result.height_mm == 45.0
+    assert result.new_width == 413
+    assert result.new_height == 531
+    assert result.output_format == "JPEG"
+    assert len(result.note) > 0
+    assert isinstance(result.saved_percent, float)
     assert len(result.data) > 0
 
     with Image.open(io.BytesIO(result.data)) as img:
