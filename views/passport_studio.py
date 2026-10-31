@@ -10,6 +10,7 @@ import streamlit as st
 
 from components.results import record_result
 from components.upload import render_image_grid, render_uploader
+from core.bg_remover import has_ai_remover
 from core.passport_studio import (
     OFFICIAL_BACKDROPS,
     PASSPORT_PRESETS,
@@ -173,6 +174,10 @@ def render() -> None:
 
         st.markdown("<hr style='margin:0.8rem 0'>", unsafe_allow_html=True)
         st.markdown("<p style='font-weight:600; font-size:0.9rem; margin-bottom:0.4rem'>🎨 Official Background Color</p>", unsafe_allow_html=True)
+        if has_ai_remover():
+            st.caption("✨ **AI Neural Human Matting is active** — automatically detects person & replaces background cleanly.")
+        else:
+            st.caption("💡 **Tip:** Select *Keep Original Photo Background* to preserve your current background, or install `rembg` for automated AI backdrop replacement.")
 
         bg_col1, bg_col2 = st.columns([1.5, 1])
         bg_choices = [

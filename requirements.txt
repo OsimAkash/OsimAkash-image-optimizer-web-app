@@ -1,5 +1,9 @@
-# Production runtime dependencies (kept under Vercel 500MB serverless limit)
-streamlit>=1.35
+# OptiPic runtime dependencies
+streamlit>=1.40
 Pillow>=10.1
 numpy>=1.26
 pandas>=2.2
+
+# AI Neural Background Removal (clean human portrait and object cutouts)
+rembg>=2.0.50
+onnxruntime>=1.16.0

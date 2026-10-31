@@ -413,21 +413,17 @@ def _smart_color_cutout(
         # Mask: 0 where green is dominant, 255 where foreground
         alpha = np.clip(1.0 - (green_diff / tol), 0.0, 1.0) * 255.0
     else:
-        # Perceptual color distance to multi-point border samples
-        # Sample border slices and 4 corner patches
+        # Sample top border and upper corners only (avoid sampling subject at bottom)
         top_samples = arr[0:max(1, h // 20), :, :3].reshape(-1, 3)
-        bot_samples = arr[max(0, h - h // 20):, :, :3].reshape(-1, 3)
-        left_samples = arr[:, 0:max(1, w // 20), :3].reshape(-1, 3)
-        right_samples = arr[:, max(0, w - w // 20):, :3].reshape(-1, 3)
+        left_samples = arr[0:max(1, h // 3), 0:max(1, w // 20), :3].reshape(-1, 3)
+        right_samples = arr[0:max(1, h // 3), max(0, w - w // 20):, :3].reshape(-1, 3)
         
-        all_border_samples = np.vstack([top_samples, bot_samples, left_samples, right_samples])
+        all_border_samples = np.vstack([top_samples, left_samples, right_samples])
         
-        # Primary backdrop sample (median) and corner samples
+        # Primary backdrop sample (median) and top corner samples
         bg_primary = np.median(all_border_samples, axis=0).astype(np.float32)
         corner_tl = np.mean(arr[0:5, 0:5, :3], axis=(0, 1)).astype(np.float32)
         corner_tr = np.mean(arr[0:5, max(0, w - 5):, :3], axis=(0, 1)).astype(np.float32)
-        corner_bl = np.mean(arr[max(0, h - 5):, 0:5, :3], axis=(0, 1)).astype(np.float32)
-        corner_br = np.mean(arr[max(0, h - 5):, max(0, w - 5):, :3], axis=(0, 1)).astype(np.float32)
 
         # Weighted perceptual distance: human eye sensitivity (R: 0.299, G: 0.587, B: 0.114)
         weights = np.array([0.299, 0.587, 0.114], dtype=np.float32)
@@ -439,17 +435,25 @@ def _smart_color_cutout(
         d_primary = calc_dist(bg_primary)
         d_tl = calc_dist(corner_tl)
         d_tr = calc_dist(corner_tr)
-        d_bl = calc_dist(corner_bl)
-        d_br = calc_dist(corner_br)
 
-        # Minimum distance to any of the background sample points (handles gradients & lighting)
-        min_dist = np.minimum(d_primary, np.minimum(np.minimum(d_tl, d_tr), np.minimum(d_bl, d_br)))
+        # Minimum distance to top background sample points
+        min_dist = np.minimum(d_primary, np.minimum(d_tl, d_tr))
 
         tol = float(max(tolerance, 5))
         softness = max(tol * 0.35, 4.0)
         
         # Alpha transfer function
         alpha = np.clip((min_dist - (tol - softness)) / (softness * 2.0), 0.0, 1.0) * 255.0
+
+        # Protect the lower-middle region (subject's torso and face) from being falsely erased by color keying
+        # If standard deviation of background samples is high, it's a textured/complex scene (e.g. brick wall)
+        bg_std = float(np.std(all_border_samples))
+        if bg_std > 25.0:
+            # Complex/non-uniform background: color keying cannot separate cleanly.
+            # Protect the central human subject region so they don't get erased!
+            y_coords, x_coords = np.ogrid[:h, :w]
+            center_mask = (y_coords > h * 0.25) & (x_coords > w * 0.15) & (x_coords < w * 0.85)
+            alpha[center_mask] = np.maximum(alpha[center_mask], 240.0)
 
     alpha_u8 = alpha.astype(np.uint8)
     alpha_img = Image.fromarray(alpha_u8, mode="L")

@@ -247,23 +247,35 @@ def generate_passport_photo(
                 else:
                     bg_rgb = (255, 255, 255)
 
-                # Extract cutout subject
-                cutout_img, _ = _cutout_subject(
-                    img,
-                    engine="ai" if has_ai_remover() else "smart",
-                    model_name="u2net_human_seg" if has_ai_remover() else "u2net",
-                    alpha_matting=False,
-                    defringe=True,
-                )
-
-                # Composite over studio solid backdrop
-                studio_base = Image.new("RGBA", cutout_img.size, (*bg_rgb, 255))
-                studio_base.paste(cutout_img, (0, 0), cutout_img)
-                composed_img = studio_base.convert("RGB")
-
-                # Extract mask for face framing
-                alpha_channel = cutout_img.getchannel("A")
-                alpha_mask = np.array(alpha_channel)
+                if has_ai_remover():
+                    try:
+                        # Extract cutout subject using AI Neural Matting
+                        cutout_img, _ = _cutout_subject(
+                            img,
+                            engine="ai",
+                            model_name="u2net_human_seg",
+                            alpha_matting=False,
+                            defringe=True,
+                        )
+                        alpha_channel = cutout_img.getchannel("A")
+                        alpha_arr = np.array(alpha_channel)
+                        
+                        # Verify the cutout preserved the subject (not empty or degraded)
+                        if np.mean(alpha_arr > 30) > 0.05:
+                            studio_base = Image.new("RGBA", cutout_img.size, (*bg_rgb, 255))
+                            studio_base.paste(cutout_img, (0, 0), cutout_img)
+                            composed_img = studio_base.convert("RGB")
+                            alpha_mask = alpha_arr
+                        else:
+                            composed_img = img.convert("RGB")
+                    except Exception as exc:
+                        logger.warning("AI cutout failed in passport studio: %s", exc)
+                        composed_img = img.convert("RGB")
+                else:
+                    # AI is not available in environment. Do NOT use naive color distance which destroys portraits!
+                    # Keep original photo backdrop to preserve the person's face and clothes intact
+                    logger.info("AI background remover not available; preserving original backdrop to avoid distortion.")
+                    composed_img = img.convert("RGB")
             else:
                 composed_img = img.convert("RGB")
                 if auto_face_framing and has_ai_remover():
