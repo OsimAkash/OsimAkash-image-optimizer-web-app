@@ -34,7 +34,7 @@ EXTENSIONS = {"jpeg": "jpg", "png": "png", "webp": "webp", "bmp": "bmp", "tiff":
 
 #: Output format -> MIME type used by download buttons.
 MIME_TYPES = {
-    "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp",
+    "jpeg": "image/jpeg", "jpg": "image/jpeg", "png": "image/png", "webp": "image/webp",
     "bmp": "image/bmp", "tiff": "image/tiff",
 }
 

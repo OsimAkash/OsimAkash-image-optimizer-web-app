@@ -104,6 +104,11 @@ class PassportResult:
     dpi: int = 300
     original_size: int = 0
     optimized_size: int = 0
+    saved_percent: float = 0.0
+    output_format: str = "JPEG"
+    new_width: int = 413
+    new_height: int = 531
+    note: str = ""
     processing_time: float = 0.0
     data: bytes = b""
     thumb: bytes = b""
@@ -328,6 +333,7 @@ def generate_passport_photo(
                 ext,
                 suffix=f"-{preset_key.replace('_', '-')}",
             )
+            saved_pct = round((1 - len(single_bytes) / original_size) * 100, 2) if original_size > 0 else 0.0
 
             return PassportResult(
                 status="success",
@@ -342,6 +348,11 @@ def generate_passport_photo(
                 dpi=300,
                 original_size=original_size,
                 optimized_size=len(single_bytes),
+                saved_percent=saved_pct,
+                output_format="JPEG" if ext == "jpg" else "PNG",
+                new_width=target_w_px,
+                new_height=target_h_px,
+                note=f"{preset_title} ({target_w_mm:.0f}×{target_h_mm:.0f} mm @ 300 DPI)",
                 processing_time=proc_time,
                 data=single_bytes,
                 thumb=make_thumbnail(single_bytes),

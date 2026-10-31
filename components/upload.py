@@ -199,30 +199,37 @@ def _render_card(
 
 
 def _render_inline_result(result, results_key: str) -> None:
-    if result.status == "failed":
-        st.error(f"Failed: {result.error}")
+    if getattr(result, "status", "") == "failed":
+        st.error(f"Failed: {getattr(result, 'error', 'Unknown error')}")
         return
-    saved = result.saved_percent
-    size_line = f"{_fmt(result.original_size)} → <strong>{_fmt(result.optimized_size)}</strong>"
+    saved = getattr(result, "saved_percent", 0.0)
+    orig_sz = getattr(result, "original_size", 0)
+    opt_sz = getattr(result, "optimized_size", 0)
+    out_fmt = getattr(result, "output_format", "JPEG")
+    new_w = getattr(result, "new_width", getattr(result, "width_px", 0))
+    new_h = getattr(result, "new_height", getattr(result, "height_px", 0))
+    note = getattr(result, "note", "")
+
+    size_line = f"{_fmt(orig_sz)} → <strong>{_fmt(opt_sz)}</strong>"
     if saved > 0:
         badge = f"<span class='opt-saved-badge'>{saved:.1f}% smaller</span>"
     elif saved < 0:
         badge = f"<span class='opt-pill' style='background:var(--danger-soft);color:var(--danger)'>{abs(saved):.1f}% larger</span>"
     else:
-        badge = "<span class='opt-pill opt-pill-muted'>No change in size</span>"
+        badge = "<span class='opt-pill opt-pill-muted'>Processed</span>"
     st.markdown(
         f"<div style='margin-top:0.5rem'>{badge}</div>"
-        f"<div class='opt-meta-line'>{size_line} · {result.output_format}"
-        f" · {result.new_width}×{result.new_height}</div>",
+        f"<div class='opt-meta-line'>{size_line} · {out_fmt}"
+        f" · {new_w}×{new_h}</div>",
         unsafe_allow_html=True,
     )
-    if result.note:
-        st.caption(f"ℹ️ {result.note}")
+    if note:
+        st.caption(f"ℹ️ {note}")
     st.download_button(
         "⬇ Download",
         data=result.data,
         file_name=result.output_filename,
-        mime=_mime(result.output_format),
+        mime=_mime(out_fmt),
         key=f"dl_{results_key}_{result.image_id}",
         width="stretch",
     )

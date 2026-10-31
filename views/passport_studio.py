@@ -15,7 +15,7 @@ from core.passport_studio import (
     PASSPORT_PRESETS,
     generate_passport_photo,
 )
-from utils.file_utils import format_bytes
+from utils.file_utils import create_zip, format_bytes
 
 
 def _on_remove(image_id: str) -> None:
@@ -79,7 +79,6 @@ def _on_generate_all() -> None:
 
     progress = st.progress(0.0, text="Creating passport photos…")
     status = st.empty()
-    results: dict = st.session_state.setdefault("ps_results", {})
 
     for index, upload in enumerate(uploads, start=1):
         status.markdown(f"**Processing {index} of {len(uploads)}** — {upload.filename}")
@@ -90,8 +89,9 @@ def _on_generate_all() -> None:
             image_id=upload.id,
             **params,
         )
-        results[upload.id] = result
+        record_result(result, "ps_results")
 
+    results: dict = st.session_state.get("ps_results", {})
     succeeded = sum(1 for u in uploads if results.get(u.id) and results[u.id].status == "success")
     progress.progress(1.0, text=f"✅ Passport photo generation complete — {succeeded} of {len(uploads)} ready.")
     status.empty()
@@ -109,7 +109,7 @@ def _on_generate_single(image_id: str) -> None:
         image_id=upload.id,
         **params,
     )
-    st.session_state.setdefault("ps_results", {})[upload.id] = result
+    record_result(result, "ps_results")
 
 
 def render() -> None:
@@ -282,6 +282,24 @@ def render() -> None:
             unsafe_allow_html=True,
         )
 
+        successful = [r for r in ordered if r.status == "success"]
+        if len(successful) > 1:
+            zip_items = []
+            for r in successful:
+                zip_items.append((r.output_filename, r.data))
+                if r.sheet_data and r.sheet_filename:
+                    zip_items.append((r.sheet_filename, r.sheet_data))
+            zip_bytes = create_zip(zip_items)
+            st.download_button(
+                f"📦 Download All Passport Photos & Sheets (ZIP · {len(zip_items)} files)",
+                data=zip_bytes,
+                file_name="passport-stamp-photos.zip",
+                mime="application/zip",
+                type="primary",
+                width="stretch",
+                key="dl_zip_passport",
+            )
+
         for res in ordered:
             if res.status != "success":
                 st.error(f"❌ Failed to process {res.original_filename}: {res.error}")
@@ -306,11 +324,12 @@ def render() -> None:
                         f"</div>",
                         unsafe_allow_html=True,
                     )
+                    single_mime = "image/png" if res.output_filename.lower().endswith(".png") else "image/jpeg"
                     st.download_button(
                         f"⬇ Download Single Photo ({res.width_mm:.0f}×{res.height_mm:.0f}mm)",
                         data=res.data,
                         file_name=res.output_filename,
-                        mime="image/jpeg",
+                        mime=single_mime,
                         key=f"dl_single_{res.image_id}",
                         type="primary",
                         width="stretch",
